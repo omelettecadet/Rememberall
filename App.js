@@ -1,17 +1,22 @@
-import { AppRegistry } from "react-native"; // ✅ Move this to the top
+import { AppRegistry } from "react-native";
 import { enableScreens } from "react-native-screens";
+import React, { useEffect } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import { View, Text } from "react-native";
+import HomeScreen from "./src/screens/HomeScreen";
+import ProfileScreen from "./src/screens/ProfileScreen";
+import { setupDatabase } from "./src/database";
 
 enableScreens();
 
-import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
-import HomeScreen from "./src/screens/HomeScreen";
-import ProfileScreen from "./src/screens/ProfileScreen";
-
 const Stack = createStackNavigator();
 
-function App() {
+export default function App() {
+  useEffect(() => {
+    setupDatabase();
+  }, []);
+
   return (
     <NavigationContainer>
       <Stack.Navigator>
@@ -22,9 +27,5 @@ function App() {
   );
 }
 
-export default App;  
-
-console.log("✅ App.js is running and navigation is loaded!");
-
-// ✅ Register the app entry point
+// Register the app entry point
 AppRegistry.registerComponent("main", () => App);

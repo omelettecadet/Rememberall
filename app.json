@@ -1,0 +1,10 @@
+{
+    "expo": {
+      "name": "Rememberall",
+      "slug": "rememberall",
+      "version": "1.0.0",
+      "platforms": ["ios", "android"],
+      "plugins": ["expo-sqlite"]
+    }
+  }
+  
