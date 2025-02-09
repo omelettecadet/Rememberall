@@ -1,6 +1,13 @@
-import * as SQLite from 'expo-sqlite';
+import { openDatabase } from 'expo-sqlite';  // ✅ Correct import
 
-const db = SQLite.openDatabase('rememberall.db');
+console.log("🔍 Checking expo-sqlite module...");
+console.log("🔍 openDatabase function:", openDatabase);
+
+const db = openDatabase('rememberall.db');
+
+if (!db) {
+  console.error("❌ SQLite database failed to open.");
+}
 
 // ✅ Initialize database tables
 export const setupDatabase = () => {

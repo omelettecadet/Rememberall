@@ -6,6 +6,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import HomeScreen from "./src/screens/HomeScreen";
 import ProfileScreen from "./src/screens/ProfileScreen";
 import { setupDatabase, addGroup, getGroups } from "./src/dbFunctions";
+import { openDatabase } from "expo-sqlite"; // ✅ Ensure proper SQLite import
 
 enableScreens();
 
@@ -15,6 +16,16 @@ export default function App() {
   const [groups, setGroups] = useState([]);
 
   useEffect(() => {
+    console.log("🔍 Checking expo-sqlite module...");
+    console.log("🔍 openDatabase function:", openDatabase);
+
+    try {
+      const dbTest = openDatabase("test.db");
+      console.log("✅ SQLite database opened successfully:", dbTest);
+    } catch (error) {
+      console.error("❌ Error opening SQLite database:", error);
+    }
+
     setupDatabase();
     fetchGroups();
   }, []);

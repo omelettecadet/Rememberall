@@ -1,6 +1,6 @@
 {
   "name": "rememberall",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "main": "App.js",
   "dependencies": {
     "@expo/config-plugins": "~9.0.0",
@@ -10,11 +10,8 @@
     "@react-navigation/native": "^6.1.0",
     "@react-navigation/stack": "^6.3.0",
     "expo": "^52.0.31",
-    "expo-dev-client": "~5.0.11",
-    "expo-dev-launcher": "^5.0.28",
+    "expo-dev-client": "^5.0.11",
     "expo-file-system": "~18.0.10",
-    "expo-modules-core": "~2.2.1",
-    "expo-sqlite": "~15.1.2",
     "patch-package": "^8.0.0",
     "postinstall-postinstall": "^2.1.0",
     "react": "18.3.1",
@@ -25,7 +22,8 @@
     "react-native-safe-area-context": "4.12.0",
     "react-native-screens": "~4.4.0",
     "react-native-vector-icons": "^10.2.0",
-    "react-native-web": "~0.19.13"
+    "react-native-web": "~0.19.13",
+    "expo-sqlite": "~15.1.2"
   },
   "devDependencies": {
     "@react-native-community/cli": "^15.1.3",

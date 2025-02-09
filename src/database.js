@@ -1,17 +1,21 @@
-import * as SQLite from 'expo-sqlite';
+import { openDatabase } from 'expo-sqlite';
+const db = openDatabase('rememberall.db');
 
-// Open database (Fix for Expo Go compatibility)
-let db;
-try {
-  db = SQLite.openDatabase('rememberall.db');
-} catch (error) {
-  console.error('Error opening database:', error);
+// Debug logs to verify what functions are available
+console.log("🔍 SQLite module:", SQLite);
+console.log("🔍 openDatabase function:", SQLite.openDatabase);
+
+// Ensure the database is properly initialized
+if (!db) {
+  console.error("❌ Database failed to open.");
+} else {
+  console.log("✅ Database opened successfully");
 }
 
 // Function to create tables
 export const setupDatabase = () => {
   if (!db) {
-    console.error("Database is not initialized.");
+    console.error("❌ Database is not initialized.");
     return;
   }
 
