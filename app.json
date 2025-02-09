@@ -1,10 +1,26 @@
 {
-    "expo": {
-      "name": "Rememberall",
-      "slug": "rememberall",
-      "version": "1.0.0",
-      "platforms": ["ios", "android"],
-      "plugins": ["expo-sqlite"]
+  "expo": {
+    "name": "Rememberall",
+    "slug": "rememberall",
+    "version": "1.0.2",
+    "orientation": "portrait",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "plugins": [
+      "expo-sqlite"
+    ],
+    "jsEngine": "hermes",
+    "newArchEnabled": true,
+    "android": {
+      "package": "com.dwhudson.rememberall",
+      "permissions": []
+    },
+    "extra": {
+      "eas": {
+        "projectId": "01d3c128-8faf-488f-a22a-f962378be654"
+      }
     }
   }
-  
+}

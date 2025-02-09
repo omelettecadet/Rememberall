@@ -1,13 +1,28 @@
-# Node.js dependencies
+# Ignore dependencies
 node_modules/
 package-lock.json
+yarn.lock
 
-# Expo files
-.expo/
-.expo-shared/
-
-# macOS system files
+# Ignore build files
+android/.gradle/
+android/app/build/
+android/app/src/main/assets/
+android/app/src/main/res/
+ios/Pods/
+ios/build/
+web-build/
+dist/
+build/
 .DS_Store
 
-# Logs
+# Ignore logs & caches
+.npm/
+.vscode/
+.idea/
+.expo/
+.expo-shared/
 *.log
+*.tmp
+
+# EAS Build files
+.easignore
