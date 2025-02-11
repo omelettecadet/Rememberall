@@ -5,8 +5,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import HomeScreen from "./src/screens/HomeScreen";
 import ProfileScreen from "./src/screens/ProfileScreen";
-import { setupDatabase, addGroup, getGroups } from "./src/dbFunctions";
-import { openDatabase } from "expo-sqlite"; // ✅ Ensure proper SQLite import
+import { initializeDatabase, setupDatabase, addGroup, getGroups } from "./src/dbFunctions";
 
 enableScreens();
 
@@ -16,26 +15,30 @@ export default function App() {
   const [groups, setGroups] = useState([]);
 
   useEffect(() => {
-    console.log("🔍 Checking expo-sqlite module...");
-    console.log("🔍 openDatabase function:", openDatabase);
-
-    try {
-      const dbTest = openDatabase("test.db");
-      console.log("✅ SQLite database opened successfully:", dbTest);
-    } catch (error) {
-      console.error("❌ Error opening SQLite database:", error);
-    }
-
-    setupDatabase();
-    fetchGroups();
+    (async () => {
+      try {
+        await initializeDatabase();
+        setupDatabase();
+        // A short delay to allow table creation, then fetch groups.
+        setTimeout(() => {
+          getGroups((groupsFromDB) => setGroups(groupsFromDB));
+        }, 500);
+      } catch (error) {
+        console.error("Database initialization error:", error);
+      }
+    })();
   }, []);
 
   const fetchGroups = () => {
-    getGroups(setGroups);
+    getGroups((fetchedGroups) => setGroups(fetchedGroups));
   };
 
   const handleAddGroup = (name) => {
-    addGroup(name, fetchGroups);
+    if (name.trim()) {
+      addGroup(name.trim(), () => {
+        fetchGroups();
+      });
+    }
   };
 
   return (
@@ -57,5 +60,4 @@ export default function App() {
   );
 }
 
-// Register the app entry point
 AppRegistry.registerComponent("main", () => App);

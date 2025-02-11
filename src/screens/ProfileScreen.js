@@ -14,8 +14,14 @@ import { getGroups, addPerson, updatePerson, deletePerson, getNotesByPerson, add
 
 const ProfileScreen = ({ route, navigation }) => {
   const { person } = route.params;
-
-  const [selectedGroups, setSelectedGroups] = useState(person.groups || []);
+  // Convert person.groups to an array if it's a string.
+  const initialGroups =
+    person.groups && typeof person.groups === "string"
+      ? person.groups.split(",").filter(Boolean)
+      : Array.isArray(person.groups)
+      ? person.groups
+      : [];
+  const [selectedGroups, setSelectedGroups] = useState(initialGroups);
   const [groupSelectorVisible, setGroupSelectorVisible] = useState(false);
   const [showNewGroupInput, setShowNewGroupInput] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
@@ -28,12 +34,10 @@ const ProfileScreen = ({ route, navigation }) => {
     fetchNotes();
   }, []);
 
-  // ✅ Load available groups from the database
   const fetchGroups = () => {
     getGroups((groups) => setAvailableGroups(groups.map((g) => g.name)));
   };
 
-  // ✅ Load notes from the database
   const fetchNotes = () => {
     getNotesByPerson(person.id, (fetchedNotes) => {
       setNotes(fetchedNotes.length ? fetchedNotes[0].content : "");
@@ -42,24 +46,28 @@ const ProfileScreen = ({ route, navigation }) => {
 
   const toggleGroupSelection = (group) => {
     setSelectedGroups((prev) =>
-      prev.includes(group) ? prev.filter((g) => g !== group) : [...prev, group]
+      Array.isArray(prev) && prev.includes(group)
+        ? prev.filter((g) => g !== group)
+        : [...(Array.isArray(prev) ? prev : []), group]
     );
   };
 
-  // ✅ Save person details to SQLite
   const handleSave = () => {
+    // Convert selectedGroups array to a comma-separated string.
+    const groupsString = selectedGroups.join(",");
     if (person.id) {
-      updatePerson(person.id, personData.name, selectedGroups.join(","), () => {
+      // Update existing person.
+      updatePerson(person.id, personData.name, groupsString, () => {
         addNote(person.id, notes, () => navigation.goBack());
       });
     } else {
-      addPerson(personData.name, selectedGroups.join(","), (id) => {
-        addNote(id, notes, () => navigation.goBack());
+      // Add new person.
+      addPerson(personData.name, groupsString, (newId) => {
+        addNote(newId, notes, () => navigation.goBack());
       });
     }
   };
 
-  // ✅ Delete person from SQLite
   const handleDelete = () => {
     Alert.alert(
       "Confirm Delete",
@@ -76,6 +84,16 @@ const ProfileScreen = ({ route, navigation }) => {
       ]
     );
   };
+
+  const handleAddNewGroup = () => {
+    if (newGroupName.trim()) {
+      addGroup(newGroupName.trim(), (newGroupId) => {
+        // Optionally update the person's selected groups locally
+        // Then refresh the groups list for HomeScreen
+        refreshGroups();  // Make sure this function calls getGroups() and updates state.
+      });
+    }
+  };  
 
   return (
     <View style={styles.container}>
@@ -109,14 +127,19 @@ const ProfileScreen = ({ route, navigation }) => {
             {availableGroups.map((group) => (
               <TouchableOpacity
                 key={group}
-                style={[styles.groupOption, selectedGroups.includes(group) && styles.selectedGroupOption]}
+                style={[
+                  styles.groupOption,
+                  selectedGroups.includes(group) && styles.selectedGroupOption,
+                ]}
                 onPress={() => toggleGroupSelection(group)}
               >
-                <Text>{group}</Text>
+                <Text style={selectedGroups.includes(group) ? styles.selectedGroupText : null}>
+                  {group}
+                </Text>
               </TouchableOpacity>
             ))}
 
-            {/* Add New Group */}
+            {/* Add New Group within Profile */}
             {!showNewGroupInput ? (
               <TouchableOpacity
                 style={styles.newGroupButton}
@@ -157,12 +180,7 @@ const ProfileScreen = ({ route, navigation }) => {
 
       {/* Notes Section */}
       <Text style={styles.label}>Notes:</Text>
-      <TextInput
-        style={[styles.input, styles.notesInput]}
-        multiline
-        value={notes}
-        onChangeText={setNotes}
-      />
+      <TextInput style={[styles.input, styles.notesInput]} multiline value={notes} onChangeText={setNotes} />
 
       {/* Save & Delete Buttons */}
       <View style={styles.buttonContainer}>
@@ -186,20 +204,47 @@ const styles = StyleSheet.create({
   saveButton: { backgroundColor: "#4CAF50", padding: 10, borderRadius: 5 },
   deleteButton: { backgroundColor: "#D9534F", padding: 10, borderRadius: 5 },
   buttonText: { color: "#fff", fontWeight: "bold", textAlign: "center" },
-
   groupList: { flexDirection: "row", flexWrap: "wrap", marginBottom: 10 },
   groupBadge: { backgroundColor: "#4CAF50", paddingVertical: 5, paddingHorizontal: 10, borderRadius: 15, marginRight: 5, marginBottom: 5 },
   groupBadgeText: { color: "#fff", fontWeight: "bold" },
   noGroupsText: { fontStyle: "italic", color: "#888", marginBottom: 10 },
-
   modalContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "rgba(0,0,0,0.5)" },
   modalContent: { width: 300, padding: 20, backgroundColor: "#fff", borderRadius: 10, alignItems: "center" },
-  groupOption: { padding: 10, width: "100%", backgroundColor: "#f0f0f0", marginVertical: 5, borderRadius: 5 },
-  selectedGroupOption: { backgroundColor: "#4CAF50", color: "#fff" },
-  newGroupButton: { marginTop: 10, padding: 10, backgroundColor: "#4CAF50", borderRadius: 5 },
-  newGroupText: { color: "#fff", fontWeight: "bold" },
+  modalButtons: { marginTop: 10, width: "100%" },
+  newGroupWrapper: { marginTop: 0 },
+  newGroupButton: { padding: 10, backgroundColor: "#ddd", borderRadius: 8, alignSelf: "center", marginTop: 0, marginBottom: 0 },
+  newGroupText: { fontWeight: "bold", color: "#000", textAlign: "center" },
   doneButton: { marginTop: 10, padding: 10, backgroundColor: "#007BFF", borderRadius: 5 },
   doneButtonText: { color: "#fff", fontWeight: "bold" },
+  sectionTitle: { fontSize: 18, fontWeight: "bold", marginVertical: 10 },
+  personItem: { padding: 15, borderBottomWidth: 1, borderBottomColor: "#eee" },
+  personName: { fontSize: 16 },
+  addPersonButton: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    backgroundColor: "#4CAF50",
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  plusIcon: { fontSize: 30, color: "#fff", fontWeight: "bold" },
+  groupOption: {
+    padding: 10,
+    width: "100%",
+    backgroundColor: "#f0f0f0",
+    marginVertical: 5,
+    borderRadius: 5,
+  },
+  selectedGroupOption: {
+    backgroundColor: "#4CAF50",
+  },
+  selectedGroupText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
 });
 
 export default ProfileScreen;

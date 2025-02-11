@@ -2,16 +2,17 @@
   "expo": {
     "name": "Rememberall",
     "slug": "rememberall",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
-    "platforms": ["ios", "android"],
-    "plugins": ["expo-sqlite"],
-    "jsEngine": "hermes",
-    "newArchEnabled": true,
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "jsEngine": "jsc",
+    "newArchEnabled": false,
     "android": {
       "package": "com.dwhudson.rememberall",
       "permissions": [],
-
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
