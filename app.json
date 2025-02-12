@@ -19,7 +19,8 @@
       }
     },
     "ios": {
-      "bundleIdentifier": "com.dwhudson.rememberall"
+      "bundleIdentifier": "com.dwhudson.rememberall",
+      "icon": "./assets/adaptive-icon.png"
     },
     "extra": {
       "eas": {
@@ -30,6 +31,7 @@
       "image": "./assets/splashscreen_logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffc145"
-    }
+    },
+    "icon": "./assets/adaptive-icon.png"
   }
 }
