@@ -201,7 +201,7 @@ const HomeScreen = () => {
               }}
             >
               <TouchableOpacity
-                style={[styles.customButton, { backgroundColor: "#3ab093" }]}
+                style={[styles.customButton, { backgroundColor: "#ffc145" }]}
                 onPress={handleAddGroup}
               >
                 <Text style={styles.customButtonText}>Add Group</Text>

@@ -1,6 +1,6 @@
 {
   "name": "rememberall",
-  "version": "1.0.4",
+  "version": "1.0.7",
   "main": "App.js",
   "dependencies": {
     "@expo/config-plugins": "~9.0.0",

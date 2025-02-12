@@ -281,17 +281,17 @@ const styles = StyleSheet.create({
     marginTop: 20, 
   },
   saveButton: { 
-    backgroundColor: "#3ab09e", 
+    backgroundColor: "#ffc145", 
     padding: 10, 
     borderRadius: 8, 
   },
   deleteButton: { 
-    backgroundColor: "#b6465f", 
+    backgroundColor: "#ddd", 
     padding: 10, 
     borderRadius: 8, 
   },
   buttonText: { 
-    color: "#fff", 
+    color: "#000", 
     fontWeight: "bold", 
     textAlign: "center", 
   },
@@ -354,11 +354,11 @@ const styles = StyleSheet.create({
   doneButton: { 
     marginTop: 10, 
     padding: 10, 
-    backgroundColor: "#3ab09e", 
+    backgroundColor: "#ffc145", 
     borderRadius: 5, 
   },
   doneButtonText: { 
-    color: "#fff", 
+    color: "#000", 
     fontWeight: "bold", 
   },
   sectionTitle: { 

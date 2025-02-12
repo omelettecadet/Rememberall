@@ -2,7 +2,7 @@
   "expo": {
     "name": "Rememberall",
     "slug": "rememberall",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "orientation": "portrait",
     "platforms": [
       "ios",
@@ -15,7 +15,7 @@
       "permissions": [],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
+        "backgroundColor": "#ffc145"
       }
     },
     "ios": {
@@ -29,7 +29,7 @@
     "splash": {
       "image": "./assets/splashscreen_logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#ffc145"
     }
   }
 }
