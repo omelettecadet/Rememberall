@@ -89,8 +89,14 @@ export const addGroup = (name, callback) => {
     tx.executeSql(
       `INSERT INTO groups (name) VALUES (?);`,
       [name],
-      (_, results) => callback(results.insertId),
-      (_, error) => console.error("Error adding group:", error)
+      (_, results) => {
+        console.log("Group added with id:", results.insertId);
+        callback(results.insertId);
+      },
+      (_, error) => {
+        console.error("Error adding group:", error ? error.message : "Unknown error");
+        return false;
+      }
     );
   });
 };
@@ -104,20 +110,43 @@ export const removeGroupFromPeople = (groupName, callback) => {
     return;
   }
   db.transaction((tx) => {
+    // Get all people whose groups include the groupName (case‑insensitive)
     tx.executeSql(
-      // We first prepend and append a comma so that we can safely replace the substring,
-      // then trim any extra commas from the result.
-      `UPDATE people
-       SET groups = TRIM(BOTH ',' FROM REPLACE(',' || IFNULL(groups, '') || ',', ',' || ? || ',', ','))
-       WHERE IFNULL(groups, '') LIKE '%' || ? || '%' COLLATE NOCASE;`,
-      [groupName, groupName],
-      (_, res) => {
-        console.log(`Removed group '${groupName}' from people, rows affected: ${res.rowsAffected}`);
+      `SELECT id, groups FROM people WHERE groups LIKE '%' || ? || '%' COLLATE NOCASE;`,
+      [groupName],
+      (_, results) => {
+        const count = results.rows.length;
+        for (let i = 0; i < count; i++) {
+          const person = results.rows.item(i);
+          // Split the groups string into an array, remove the groupName (ignoring case), then rejoin.
+          let groupsArray = person.groups
+            ? person.groups.split(',').map((s) => s.trim())
+            : [];
+          groupsArray = groupsArray.filter(
+            (g) => g.toLowerCase() !== groupName.toLowerCase()
+          );
+          const updatedGroups = groupsArray.join(',');
+          // Update the person's groups field
+          tx.executeSql(
+            `UPDATE people SET groups = ? WHERE id = ?;`,
+            [updatedGroups, person.id],
+            (_, res) =>
+              console.log(`Updated person ${person.id} groups to: ${updatedGroups}`),
+            (_, error) =>
+              console.error(
+                `Error updating person ${person.id}:`,
+                error ? error.message : "Unknown error"
+              )
+          );
+        }
         callback();
       },
       (_, error) => {
-        console.error("Error removing group from people:", error);
-        callback(); // still call callback so the deleteGroup function can proceed
+        console.error(
+          "Error fetching people for group removal:",
+          error ? error.message : "Unknown error"
+        );
+        callback();
       }
     );
   });
@@ -135,15 +164,52 @@ export const deleteGroup = (id, groupName, callback) => {
       [id],
       (_, results) => {
         console.log(`Group with id ${id} deleted successfully.`);
-        // Remove the group from people's groups
+        // Remove this group name from every person's record.
         removeGroupFromPeople(groupName, () => {
           callback(results.rowsAffected);
         });
       },
       (_, error) => {
-        console.error("Error deleting group:", error);
+        console.error("Error deleting group:", error ? error.message : "Unknown error");
       }
     );
+  });
+};
+
+export const cleanPeopleGroups = (callback) => {
+  // First, get the master list of groups from the groups table.
+  getGroups((masterGroups) => {
+    const masterGroupNames = masterGroups.map(g => g.name.toLowerCase());
+    db.transaction((tx) => {
+      tx.executeSql(
+        `SELECT id, groups FROM people;`,
+        [],
+        (_, results) => {
+          for (let i = 0; i < results.rows.length; i++) {
+            const person = results.rows.item(i);
+            if (person.groups) {
+              // Filter out groups not in the master list.
+              const updatedGroups = person.groups.split(",")
+                .map(g => g.trim())
+                .filter(g => masterGroupNames.includes(g.toLowerCase()))
+                .join(",");
+              // Update the person's groups field if necessary.
+              tx.executeSql(
+                `UPDATE people SET groups = ? WHERE id = ?;`,
+                [updatedGroups, person.id],
+                () => console.log(`Updated person ${person.id} groups to: ${updatedGroups}`),
+                (_, error) => console.error(`Error updating person ${person.id}:`, error ? error.message : "Unknown error")
+              );
+            }
+          }
+          if (callback) callback();
+        },
+        (_, error) => {
+          console.error("Error cleaning people groups:", error ? error.message : "Unknown error");
+          if (callback) callback();
+        }
+      );
+    });
   });
 };
 
@@ -190,7 +256,11 @@ export const getPeople = (callback) => {
   }
   db.transaction((tx) => {
     tx.executeSql(
-      `SELECT * FROM people ORDER BY name ASC;`,
+      `SELECT p.*, IFNULL(group_concat(n.content, ' '), '') as allNotes
+       FROM people p
+       LEFT JOIN notes n ON n.person_id = p.id
+       GROUP BY p.id
+       ORDER BY p.name ASC;`,
       [],
       (_, results) => {
         let peopleArray = [];
@@ -201,7 +271,7 @@ export const getPeople = (callback) => {
         callback(peopleArray);
       },
       (_, error) => {
-        console.error("Error fetching people:", error);
+        console.error("Error fetching people:", error ? error.message : "Unknown error");
         callback([]);
       }
     );

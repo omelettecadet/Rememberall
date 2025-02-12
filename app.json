@@ -2,13 +2,13 @@
   "expo": {
     "name": "Rememberall",
     "slug": "rememberall",
-    "version": "1.0.4",
+    "version": "1.0.6",
     "orientation": "portrait",
     "platforms": [
       "ios",
       "android"
     ],
-    "jsEngine": "jsc",
+    "jsEngine": "hermes",
     "newArchEnabled": false,
     "android": {
       "package": "com.dwhudson.rememberall",
