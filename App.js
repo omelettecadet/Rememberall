@@ -43,7 +43,18 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator
+        screenOptions={{
+            headerStyle: {
+              backgroundColor: "#ffc145",
+            },
+            headerTintColor: "#000",
+            headerTitleStyle: {
+              fontWeight: "bold",
+              fontSize: 20,
+            },
+          }}
+        >
         <Stack.Screen name="Rememberall">
           {(props) => (
             <HomeScreen
