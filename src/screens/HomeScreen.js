@@ -37,6 +37,11 @@ const HomeScreen = () => {
   const [showNewGroupInput, setShowNewGroupInput] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
 
+    // State for editing groups
+    const [editGroupModalVisible, setEditGroupModalVisible] = useState(false);
+    const [groupToEdit, setGroupToEdit] = useState(null);
+    const [editGroupName, setEditGroupName] = useState("");
+
   // Fetch groups and people when the component mounts or when focused
   useEffect(() => {
     fetchGroups();
@@ -96,13 +101,36 @@ const HomeScreen = () => {
         {
           text: "Edit",
           onPress: () => {
-            // Implement editing if desired; for now you could navigate or open another modal.
-            // updateGroupName(group.name, newGroupName, callback) could be called here.
+            // Set up the edit modal
+            setGroupToEdit(group);
+            setEditGroupName(group.name);
+            setEditGroupModalVisible(true);
           },
         },
         { text: "Cancel", style: "cancel" },
       ]
     );
+  };
+
+  const handleEditGroupSave = () => {
+    if (groupToEdit && editGroupName.trim()) {
+      // Call updateGroupName from your dbFunctions (make sure it updates both the groups table and people's groups)
+      updateGroupName(groupToEdit.name, editGroupName.trim(), () => {
+        setEditGroupModalVisible(false);
+        setGroupToEdit(null);
+        setEditGroupName("");
+        fetchGroups();
+        fetchPeople();
+      });
+    } else if (!groupToEdit && editGroupName.trim()) {
+      // Adding a new group
+      addGroup(editGroupName.trim(), (insertId) => {
+        fetchGroups();
+        fetchPeople();
+        setEditGroupModalVisible(false);
+        setEditGroupName("");
+      });
+    }
   };
 
   // Filter people based on search text and selected group
@@ -171,48 +199,64 @@ const HomeScreen = () => {
         <TouchableOpacity
           style={styles.newGroupButton}
           onPress={() => {
+            // Directly open the modal for adding a new group.
             setNewGroupName("");
-            // Immediately show the new group input:
-            setShowNewGroupInput(true);
-            setGroupModalVisible(true);
+            setGroupToEdit(null); // Indicates we're adding, not editing.
+            setEditGroupModalVisible(true);
           }}
         >
           <Text style={styles.newGroupText}>+ New Group</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Add Group Modal */}
-      <Modal visible={groupModalVisible} animationType="fade" transparent>
+      <Modal visible={editGroupModalVisible} transparent animationType="fade">
         <View style={styles.modalBackground}>
           <View style={[styles.modalContent, { maxHeight: screenHeight * 0.7 }]}>
-            <Text style={styles.label}>Enter New Group Name:</Text>
-            {/* Always show the text input and Add/Cancel buttons */}
+            <Text style={styles.label}>
+              {groupToEdit ? "Edit Group Name:" : "New Group Name:"}
+            </Text>
             <TextInput
               style={styles.input}
-              placeholder="New group name..."
-              value={newGroupName}
-              onChangeText={setNewGroupName}
+              placeholder="Group name..."
+              value={editGroupName}
+              onChangeText={setEditGroupName}
             />
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-around",
-                width: "100%",
-              }}
-            >
+            <View style={{ flexDirection: "row", justifyContent: "space-around", width: "100%" }}>
               <TouchableOpacity
                 style={[styles.customButton, { backgroundColor: "#ffc145" }]}
-                onPress={handleAddGroup}
+                onPress={() => {
+                  if (editGroupName.trim()) {
+                    if (groupToEdit) {
+                      // Update existing group
+                      updateGroupName(groupToEdit.name, editGroupName.trim(), () => {
+                        setEditGroupModalVisible(false);
+                        setGroupToEdit(null);
+                        setEditGroupName("");
+                        fetchGroups();
+                        fetchPeople();
+                      });
+                    } else {
+                      // Add new group
+                      addGroup(editGroupName.trim(), (insertId) => {
+                        fetchGroups();
+                        fetchPeople();
+                        setEditGroupModalVisible(false);
+                        setEditGroupName("");
+                      });
+                    }
+                  }
+                }}
               >
-                <Text style={styles.customButtonText}>Add Group</Text>
+                <Text style={styles.customButtonText}>
+                  {groupToEdit ? "Save" : "Add Group"}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.customButton, { backgroundColor: "#ddd" }]}
                 onPress={() => {
-                  // Cancel: reset state and close the modal
-                  setNewGroupName("");
-                  setShowNewGroupInput(false);
-                  setGroupModalVisible(false);
+                  setEditGroupModalVisible(false);
+                  setEditGroupName("");
+                  setGroupToEdit(null);
                 }}
               >
                 <Text style={styles.customButtonText}>Cancel</Text>
